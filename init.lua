@@ -1228,7 +1228,7 @@ local function Decompile(bytecode)
 							end
 						end
 						opConstructors["COVERAGE"] = function()
-							protoOutput ..= string.format("COVERAGE (%i)", E)
+							protoOutput ..= string.format("--COVERAGE (%i)", E)
 						end
 						opConstructors["CAPTURE"] = function()
 							local captureType = ""
@@ -1253,7 +1253,7 @@ local function Decompile(bytecode)
 						end
 						opConstructors["NEWCLOSURE"] = function()
 							if SHOW_MISC_OPERATIONS then
-								protoOutput ..= "[NEWCLOSURE]\n"
+								protoOutput ..= "\n"
 							end
 
 							local nextProto = proto.innerProtoTable[D + 1]
