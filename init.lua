@@ -1356,9 +1356,9 @@ local function Decompile(bytecode)
 								if nextProto.source then
 									protoOutput ..= baseProto(nextProto, depth, false)
 									addTab(depth)
-									protoOutput ..= string.format("[DUPCLOSURE] %s = ", modifyRegister(A)) .. nextProto.source
+									protoOutput ..= string.format("--[[DUPCLOSURE]] %s = ", modifyRegister(A)) .. nextProto.source
 								else
-									protoOutput ..= string.format("[DUPCLOSURE] %s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
+									protoOutput ..= string.format("--[[DUPCLOSURE]] %s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
 								end
 
 								--TODO: idk what to do with this. causes issues sometimes
