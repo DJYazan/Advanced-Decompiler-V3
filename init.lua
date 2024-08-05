@@ -653,7 +653,7 @@ local function Decompile(bytecode)
 
 					protoOutput ..= lineStr --.. tostring(insnIndex) .. "."
 
-					addTab(1)
+					--addTab(1)
 
 					if SHOW_OPERATION_NAMES then
 						protoOutput ..= opInfo.name or "[UNNAMED]"
