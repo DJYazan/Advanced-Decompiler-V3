@@ -651,7 +651,7 @@ local function Decompile(bytecode)
 						lineStr ..=  string.format(Strings.DECOMPILER_REMARK, `Function "{remarkProtoName}" was inlined here (LINE IS NOT VALID)`) .. "	"
 					end
 
-					protoOutput ..= lineStr .. tostring(insnIndex) .. "."
+					protoOutput ..= lineStr --.. tostring(insnIndex) .. "."
 
 					addTab(1)
 
