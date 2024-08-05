@@ -697,10 +697,10 @@ local function Decompile(bytecode)
 							protoOutput ..= baseLocal(A, "nil")
 						end
 						opConstructors["NOP"] = function()
-							protoOutput ..= "--[NOP]"
+							protoOutput ..= ""
 						end
 						opConstructors["BREAK"] = function()
-							protoOutput ..= "break --(debugger)"
+							protoOutput ..= "break)"
 						end
 						opConstructors["LOADK"] = function()
 							local k = proto.constsTable[D + 1] or nilValue
@@ -735,7 +735,7 @@ local function Decompile(bytecode)
 							protoOutput ..= `{proto.nestedUpvalues[B]} = {modifyRegister(A)} -- set upval`
 						end
 						opConstructors["CLOSEUPVALS"] = function()
-							protoOutput ..= `--[CLOSEUPVALS]: clear captures from back until: {A}`
+							protoOutput ..= `--closeupvals`
 						end
 						opConstructors["MOVE"] = function()
 							protoOutput ..= baseLocal(A, modifyRegister(B))
@@ -852,7 +852,7 @@ local function Decompile(bytecode)
 						opConstructors["FORNPREP"] = function() -- prepare numeric loop
 							--TODO: read instructions before fornprep and show their values (and clear them away)
 							-- also remove step if its 1
-							protoOutput ..= `for {modifyRegister(A + 2)} = {modifyRegister(A + 2)}, {modifyRegister(A)}, {modifyRegister(A + 1)} do -- [escape at #{insnIndex + sD}]`
+							protoOutput ..= `for {modifyRegister(A + 2)} = {modifyRegister(A + 2)}, {modifyRegister(A)}, {modifyRegister(A + 1)} do`
 						end
 						opConstructors["FORNLOOP"] = function()
 							protoOutput ..= "end" .. ` -- FORNLOOP end - iterate + goto #{insnIndex + sD}`
@@ -872,11 +872,11 @@ local function Decompile(bytecode)
 								end
 							end
 
-							protoOutput ..= `for {regStr} in {modifyRegister(A)} do -- [escape at #{endInsnIndex}]`
+							protoOutput ..= `for {regStr} in {modifyRegister(A)} do`
 						end
 						opConstructors["FORGLOOP"] = function()
 							local respectsArrayOrder = toboolean(rshift(aux, 0x1F))
-							protoOutput ..= "end" .. string.format(" -- FORGLOOP - iterate + goto #%i", insnIndex + sD) .. (respectsArrayOrder and " (ipairs)" or "")
+							protoOutput ..= "end"
 						end
 						opConstructors["FORGPREP_INEXT"] = function()
 							local endInsnIndex = insnIndex + sD + 1
@@ -893,7 +893,7 @@ local function Decompile(bytecode)
 								end
 							end
 
-							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do -- [escape at #{endInsnIndex}] (ipairs)`
+							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do`
 						end
 						opConstructors["DEP_FORGLOOP_INEXT"] = function()
 							local endInsnIndex = insnIndex + sD + 1
@@ -910,7 +910,7 @@ local function Decompile(bytecode)
 								end
 							end
 
-							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do -- [escape at #{endInsnIndex}] (ipairs) DEPRECATED`
+							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do`
 						end
 						opConstructors["FORGPREP_NEXT"] = function()
 							local endInsnIndex = insnIndex + sD + 1
@@ -927,7 +927,7 @@ local function Decompile(bytecode)
 								end
 							end
 
-							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do -- [escape at #{endInsnIndex}] (pairs/next)`
+							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do`
 						end
 						opConstructors["DEP_FORGLOOP_NEXT"] = function()
 							local endInsnIndex = insnIndex + sD + 1
@@ -944,7 +944,7 @@ local function Decompile(bytecode)
 								end
 							end
 
-							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do -- [escape at #{endInsnIndex}] (pairs/next) DEPRECATED`
+							protoOutput ..= `for {regStr} in {modifyRegister(A)}({modifyRegister(A + 1)}) do`
 						end
 						opConstructors["JUMP"] = function()
 							local endPoint = insnIndex + sD
@@ -967,7 +967,7 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if not %s then --[[goto #%i]]", modifyRegister(A), endPoint)
+							protoOutput ..= string.format("if not %s then", modifyRegister(A), endPoint)
 						end
 						opConstructors["JUMPIFNOT"] = function(ignoreJump) -- inverse
 							local nextInsn = proto.insnTable[insnIndex + 2]
@@ -978,11 +978,11 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s then --[[goto #%i]]", modifyRegister(A), endPoint)
+							protoOutput ..= string.format("if %s then", modifyRegister(A), endPoint)
 						end
 						opConstructors["JUMPX"] = function()
 							addReference(insnIndex, insnIndex + E)
-							protoOutput ..= string.format("goto #%i [X]", insnIndex + E)
+							protoOutput ..= string.format("--goto #%i [X]", insnIndex + E)
 						end
 						opConstructors["JUMPIFEQ"] = function(ignoreJump) -- inverse
 							local nextInsn = proto.insnTable[insnIndex + 2]
@@ -993,7 +993,7 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s ~= %s then --[[goto #%i]]", modifyRegister(A), modifyRegister(aux), endPoint)
+							protoOutput ..= string.format("if %s ~= %s then", modifyRegister(A), modifyRegister(aux), endPoint)
 						end
 						opConstructors["JUMPIFNOTEQ"] = function(ignoreJump) -- inverse
 							if not ignoreJump then
@@ -1007,7 +1007,7 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s == %s then --[[goto #%i]]", modifyRegister(A), modifyRegister(aux), endPoint)
+							protoOutput ..= string.format("if %s == %s then", modifyRegister(A), modifyRegister(aux), endPoint)
 						end
 						opConstructors["JUMPIFLE"] = function(ignoreJump) -- inverse
 							local nextInsn = proto.insnTable[insnIndex + 2]
@@ -1018,7 +1018,7 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s > %s then --[[goto #%i]]", modifyRegister(A), modifyRegister(aux), endPoint)
+							protoOutput ..= string.format("if %s > %s then", modifyRegister(A), modifyRegister(aux), endPoint)
 						end
 						opConstructors["JUMPIFNOTLE"] = function(ignoreJump) -- inverse
 							local nextInsn = proto.insnTable[insnIndex + 2]
@@ -1029,7 +1029,7 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s <= %s then --[[goto #%i]]", modifyRegister(A), modifyRegister(aux), endPoint)
+							protoOutput ..= string.format("if %s <= %s then", modifyRegister(A), modifyRegister(aux), endPoint)
 						end
 						opConstructors["JUMPIFLT"] = function(ignoreJump) -- inverse
 							local nextInsn = proto.insnTable[insnIndex + 2]
@@ -1040,7 +1040,7 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s >= %s then --[[goto #%i]]", modifyRegister(A), modifyRegister(aux), endPoint)
+							protoOutput ..= string.format("if %s >= %s then", modifyRegister(A), modifyRegister(aux), endPoint)
 						end
 						opConstructors["JUMPIFNOTLT"] = function(ignoreJump) -- inverse
 							local nextInsn = proto.insnTable[insnIndex + 2]
@@ -1051,7 +1051,7 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s > %s then --[[goto #%i]]", modifyRegister(aux), modifyRegister(A), endPoint)
+							protoOutput ..= string.format("if %s > %s then", modifyRegister(aux), modifyRegister(A), endPoint)
 						end
 						opConstructors["JUMPXEQKNIL"] = function() -- inverse
 							addReference(insnIndex, insnIndex + sD)
@@ -1064,7 +1064,7 @@ local function Decompile(bytecode)
 							local v = if NOTFlag then "~=" else "=="
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s %s nil then --[[goto #%i]]", modifyRegister(A), v, endPoint)
+							protoOutput ..= string.format("if %s %s nil then", modifyRegister(A), v, endPoint)
 						end
 						opConstructors["JUMPXEQKB"] = function() -- inverse
 							addReference(insnIndex, insnIndex + sD)
@@ -1077,7 +1077,7 @@ local function Decompile(bytecode)
 							local v = if NOTFlag then "~=" else "=="
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s %s %s then --[[goto #%i]]", modifyRegister(A), v, tostring(bit32.band(aux, 1) == 1), endPoint)
+							protoOutput ..= string.format("if %s %s %s then", modifyRegister(A), v, tostring(bit32.band(aux, 1) == 1), endPoint)
 						end
 						opConstructors["JUMPXEQKN"] = function() -- inverse
 							addReference(insnIndex, insnIndex + sD)
@@ -1091,7 +1091,7 @@ local function Decompile(bytecode)
 							local k = proto.constsTable[bit32.band(aux, 0xFFFFFF) + 1] or nilValue
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s %s %s then --[[goto #%i]]", modifyRegister(A), v, tostring(k.value), endPoint)
+							protoOutput ..= string.format("if %s %s %s then", modifyRegister(A), v, tostring(k.value), endPoint)
 						end
 						opConstructors["JUMPXEQKS"] = function() -- inverse
 							addReference(insnIndex, insnIndex + sD)
@@ -1106,7 +1106,7 @@ local function Decompile(bytecode)
 							local k = proto.constsTable[bit32.band(aux, 0xFFFFFF) + 1] or nilValue
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
-							protoOutput ..= string.format("if %s %s %s then --[[goto #%i]]", modifyRegister(A), v, '"' .. tostring(k.value) .. '"', endPoint)
+							protoOutput ..= string.format("if %s %s %s then", modifyRegister(A), v, '"' .. tostring(k.value) .. '"', endPoint)
 						end
 						opConstructors["ADD"] = function()
 							protoOutput ..= baseLocal(A, `{modifyRegister(B)} + {modifyRegister(C)}`)
@@ -1192,9 +1192,9 @@ local function Decompile(bytecode)
 						opConstructors["NEWTABLE"] = function()
 							local arraySize = aux
 							if arraySize ~= 0 then
-								protoOutput ..= baseLocal(A, `\{\} -- this array has ({arraySize})indexes by default`)
+								protoOutput ..= baseLocal(A, `\{\}`)
 							else
-								protoOutput ..= baseLocal(A, `\{\} -- this array is empty`)
+								protoOutput ..= baseLocal(A, `\{\}`)
 							end
 						end
 						opConstructors["DUPTABLE"] = function()
@@ -1298,9 +1298,9 @@ local function Decompile(bytecode)
 								if nextProto.source then
 									protoOutput ..= baseProto(nextProto, depth, false)
 									addTab(depth)
-									protoOutput ..= string.format("--[[NEWCLOSURE]]-- %s = ", modifyRegister(A)) .. nextProto.source
+									protoOutput ..= string.format("%s = ", modifyRegister(A)) .. nextProto.source
 								else
-									protoOutput ..= string.format("--[[NEWCLOSURE]]-- %s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
+									protoOutput ..= string.format("%s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
 								end
 
 								--TODO: idk what to do with this. causes issues sometimes
@@ -1311,7 +1311,7 @@ local function Decompile(bytecode)
 							-- shared upvalues >= 0
 
 							if SHOW_MISC_OPERATIONS then
-								protoOutput ..= "--[DUPCLOSURE]\n"
+								protoOutput ..= "\n"
 							end
 
 							local nextProto = protoTable[proto.constsTable[D + 1].value - 1]
@@ -1356,9 +1356,9 @@ local function Decompile(bytecode)
 								if nextProto.source then
 									protoOutput ..= baseProto(nextProto, depth, false)
 									addTab(depth)
-									protoOutput ..= string.format("--[[DUPCLOSURE]] %s = ", modifyRegister(A)) .. nextProto.source
+									protoOutput ..= string.format("%s = ", modifyRegister(A)) .. nextProto.source
 								else
-									protoOutput ..= string.format("--[[DUPCLOSURE]] %s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
+									protoOutput ..= string.format("%s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
 								end
 
 								--TODO: idk what to do with this. causes issues sometimes
@@ -1401,20 +1401,6 @@ local function Decompile(bytecode)
 						warn(`OP '{opInfo.name}' went unhandled: missing constructor`)
 					end
 
-					if SHOW_REFERENCES then
-						for _, v in refData do
-							if v.insnIndex == insnIndex then
-								protoOutput ..= " -- referenced by "
-								for i = 1, #v.refs do
-									protoOutput ..= "#" .. v.refs[i]
-									if i < #v.refs then
-										protoOutput ..= ", "
-									end
-								end
-							end
-						end
-					end
-
 					addNewLine()
 				end
 
@@ -1426,7 +1412,7 @@ local function Decompile(bytecode)
 						if pointType == POINT_TYPE_ELSE then
 							if hasElse then
 								-- can't handle it right now, mark as an addition to previous if then
-								pointResult = "and (else)"
+								pointResult = "else"
 							else
 								hasElse = true
 								pointResult = "else"
