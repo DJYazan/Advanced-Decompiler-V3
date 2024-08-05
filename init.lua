@@ -2,7 +2,7 @@
 
 --TODO: add --optimize hotcomment support if possible even?
 --TODO: stop listing nested upvalues and use them directly
---TODO: fix indentation
+--TODO: fix spacing
 
 ;;CONSTANTS HERE;;
 
