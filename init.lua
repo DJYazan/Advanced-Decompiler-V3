@@ -1367,7 +1367,7 @@ local function Decompile(bytecode)
 						end
 						opConstructors["PREPVARARGS"] = function()
 							if SHOW_MISC_OPERATIONS then
-								protoOutput ..= string.format("[PREPVARARGS] (%i) -- number of fixed args", A)
+								protoOutput ..= string.format("--[PREPVARARGS] (%i) -- number of fixed args", A)
 							end
 						end
 						opConstructors["RETURN"] = function()
