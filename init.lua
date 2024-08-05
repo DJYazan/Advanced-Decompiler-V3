@@ -4,7 +4,7 @@
 --TODO: stop listing nested upvalues and use them directly
 --TODO: use letter "u" instead of "v" for upvalues
 
-;;CONSTANTS HERE;;
+--;;CONSTANTS HERE;;
 
 -- TEMPORARY
 local POINT_TYPE_END = 0
@@ -349,6 +349,7 @@ local function Decompile(bytecode)
 
 							local insnOP = Luau:INSN_OP(insn)
 							local opInfo = LuauOpCode[insnOP]
+							ENABLED_REMARKS.INLINE_REMARK = false
 
 							if opInfo then
 								for _, otherProto in validProtos do
@@ -464,6 +465,7 @@ local function Decompile(bytecode)
 					local starterCount
 					if isUpvalue then
 						starterCount = 0
+						return `v_u_{starterCount + depth + register - protoNumParams}`
 					else
 						starterCount = totalVars
 					end
@@ -701,10 +703,10 @@ local function Decompile(bytecode)
 							protoOutput ..= baseLocal(A, "nil")
 						end
 						opConstructors["NOP"] = function()
-							protoOutput ..= "[NOP]"
+							protoOutput ..= "--[NOP]"
 						end
 						opConstructors["BREAK"] = function()
-							protoOutput ..= "break (debugger)"
+							protoOutput ..= "break --(debugger)"
 						end
 						opConstructors["LOADK"] = function()
 							local k = proto.constsTable[D + 1] or nilValue
@@ -739,7 +741,7 @@ local function Decompile(bytecode)
 							protoOutput ..= `{proto.nestedUpvalues[B]} = {modifyRegister(A)} -- set upval`
 						end
 						opConstructors["CLOSEUPVALS"] = function()
-							protoOutput ..= `[CLOSEUPVALS]: clear captures from back until: {A}`
+							protoOutput ..= `--[CLOSEUPVALS]: clear captures from back until: {A}`
 						end
 						opConstructors["MOVE"] = function()
 							protoOutput ..= baseLocal(A, modifyRegister(B))
@@ -954,13 +956,13 @@ local function Decompile(bytecode)
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("goto #%i", endPoint)
+							protoOutput ..= string.format("--goto #%i", endPoint)
 						end
 						opConstructors["JUMPBACK"] = function()
 							local endPoint = insnIndex + sD
 							createLoopPoint(insnIndex, endPoint)
 							addReference(insnIndex, endPoint)
-							protoOutput ..= string.format("go back to #%i -- might be a repeating loop", endPoint + 1)
+							protoOutput ..= string.format("--go back to #%i -- might be a repeating loop", endPoint + 1)
 						end
 						opConstructors["JUMPIF"] = function(ignoreJump) -- inverse
 							local nextInsn = proto.insnTable[insnIndex + 2]
@@ -1289,7 +1291,7 @@ local function Decompile(bytecode)
 										-- temporary
 										nextProto.nestedUpvalues[upvalueIndex] = `upvalues[{captureIndex}]`
 									else
-										error("[NEWCLOSURE] Invalid capture type")
+										error("--[NEWCLOSURE] Invalid capture type")
 									end
 								else
 									break
@@ -1302,9 +1304,9 @@ local function Decompile(bytecode)
 								if nextProto.source then
 									protoOutput ..= baseProto(nextProto, depth, false)
 									addTab(depth)
-									protoOutput ..= string.format("[NEWCLOSURE] %s = ", modifyRegister(A)) .. nextProto.source
+									protoOutput ..= string.format("--[[NEWCLOSURE]]-- %s = ", modifyRegister(A)) .. nextProto.source
 								else
-									protoOutput ..= string.format("[NEWCLOSURE] %s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
+									protoOutput ..= string.format("--[[NEWCLOSURE]]-- %s = ", modifyRegister(A)) .. baseProto(nextProto, depth, false)
 								end
 
 								--TODO: idk what to do with this. causes issues sometimes
@@ -1315,7 +1317,7 @@ local function Decompile(bytecode)
 							-- shared upvalues >= 0
 
 							if SHOW_MISC_OPERATIONS then
-								protoOutput ..= "[DUPCLOSURE]\n"
+								protoOutput ..= "--[DUPCLOSURE]\n"
 							end
 
 							local nextProto = protoTable[proto.constsTable[D + 1].value - 1]
