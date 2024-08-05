@@ -1,5 +1,5 @@
 -- Collection of strings later formatted by the decompiler for output
-local MemeStrings = {"skibidi yayayayya"}
+local MemeStrings = {"Decompiled with @robloxluau's improved AD3"}
 
 local Strings = {
 	SUCCESS = "--" .. MemeStrings[math.random(#MemeStrings)] .. "\n%s",
