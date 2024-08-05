@@ -651,12 +651,6 @@ local function Decompile(bytecode)
 						lineStr ..=  string.format(Strings.DECOMPILER_REMARK, `Function "{remarkProtoName}" was inlined here (LINE IS NOT VALID)`) .. "	"
 					end
 
-					if SHOW_INSTRUCTION_LINES then
-						local instructionLine = proto.smallLineInfo[insnIndex]
-						local instructionLargeLine = proto.largeLineInfo[insnIndex]
-						lineStr ..= `[line {instructionLargeLine + instructionLine}] `
-					end
-
 					protoOutput ..= lineStr .. tostring(insnIndex) .. "."
 
 					addTab(1)
