@@ -2,7 +2,7 @@
 
 --TODO: add --optimize hotcomment support if possible even?
 --TODO: stop listing nested upvalues and use them directly
---TODO: use letter "u" instead of "v" for upvalues
+--TODO: fix indentation
 
 ;;CONSTANTS HERE;;
 
