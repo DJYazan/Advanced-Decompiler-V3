@@ -460,7 +460,7 @@ local function Decompile(bytecode)
 			local function modifyRegister(register, isUpvalue)
 				-- parameter registers are preallocated
 				if register < protoNumParams then
-					return `p{(totalParams - protoNumParams) + register + 1}`
+					return `p_u_{(totalParams - protoNumParams) + register + 1}`
 				else
 					local starterCount
 					if isUpvalue then
